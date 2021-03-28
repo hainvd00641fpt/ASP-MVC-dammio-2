@@ -15,28 +15,47 @@ namespace OneCMVC1.Controllers
         private OneCEntities db = new OneCEntities();
 
         // GET: Links
-        public ActionResult Index(string searchString, int categoryID = 0)
+        public ActionResult Index(string sortOrder)
         {
-
-            //1. Tạo danh sách danh mục để hiển thị ở giao diện View thông qua DropDownList
-            var categories = from c in db.Categories select c;
-            ViewBag.categoryID = new SelectList(categories, "CategoryID", "CategoryName"); // danh sách Category
-
-            //2. Tạo câu truy vấn kết 2 bảng Link, Category bằng hàm Include do 2 bảng có ràng buộc ở các thuộc tính virtual
-            var links = db.Links.Include(l => l.Category);
-
-            //3. Tìm kiếm chuỗi truy vấn
-            if (!String.IsNullOrEmpty(searchString))
+            //1. Them bien NameSortParm de biet trang thai sap xep tang giam o View
+            if (String.IsNullOrEmpty(sortOrder))
             {
-                links = links.Where(s => s.LinkName.Contains(searchString));
+                ViewBag.NameSortParm = "name_desc";
             }
-
-            //4. Tìm kiếm theo CategoryID
-            if (categoryID != 0)
+            else
             {
-                links = links.Where(x => x.CategoryID == categoryID);
+                ViewBag.NameSortPart = "";
             }
+            // ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
 
+            ViewBag.DescriptionSortParm = sortOrder == "Description" ? "description_desc" : "{description";
+
+
+            //2. truy van lay tat ca duong dan
+            var links = from l in db.Links
+                        select l;
+            //3. sap xep theo thuoc tinh LinkName
+            switch (sortOrder)
+            {
+                //3.1 neu bien sortName giam thi sap xep theo LinkName
+                case "name_desc":
+                    links = links.OrderByDescending(s => s.LinkName);
+                break;
+                //3.2 sap xep tang dan theo linkDescription
+                case "Description":
+                    links = links.OrderBy(s => s.LinkDescription);
+                    break;
+                //3.3 sap xep giam dan theo linkDescription
+                case "description_desc":
+                    links = links.OrderByDescending(s => s.LinkDescription);
+                    break;
+
+                //3.4 mac dinh sap xep tan
+                default:
+                    links = links.OrderBy(s => s.LinkName);
+                    break;
+            }
+            //4.tra ket qua ra view
             return View(links.ToList());
         }
 

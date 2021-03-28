@@ -10,16 +10,19 @@
 <p>
     @Html.ActionLink("Create New", "Create")
 
-    @using (Html.BeginForm("Index", "Link", FormMethod.Get))
+    @*@using (Html.BeginForm("Index", "Link", FormMethod.Get))
     {
         <p>
             Title: @Html.TextBox("SearchString") --- Category: @Html.DropDownList("categoryID", "All") <input type="submit" value="Tìm kiếm" />
          </p>
-    }
+    }*@
 </p>
 
 <table class="table">
     <tr>
+        <th>
+            @Html.ActionLink("Link Name", "Index", new { sortOrder = ViewBag.NameSortParm })
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.LinkName)
         </th>
@@ -27,7 +30,7 @@
             @Html.DisplayNameFor(model => model.LinkURL)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.LinkDescription)
+            @Html.ActionLink("Link Description", "Index", new { sortOrder = ViewBag.DescriptionSortParm })
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Category.CategoryName)
