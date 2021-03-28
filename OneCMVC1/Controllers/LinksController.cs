@@ -21,25 +21,61 @@ namespace OneCMVC1.Controllers
         public ActionResult Index(string sortProperty, string sortOrder)
         {
             // 1. Tao bien ViewBag SortOrder de giu trang thai sap tang hay giam
-            ViewBag.SortOrder = String.IsNullOrEmpty(sortOrder) ? "desc" : "";
+            //ViewBag.SortOrder = String.IsNullOrEmpty(sortOrder) ? "desc" : "";
+            if (sortOrder == "asc") ViewBag.SortOrder = "desc";
+            if (sortOrder == "desc") ViewBag.SortOder = "";
+            if (sortOrder == "") ViewBag.SortOder = "asc";
 
-            // 2. lay tat ca ten thuoc tinh cua lop Link (LinkID, LinkName, LinkURL,...)
+            // 2. Lấy tất cả tên thuộc tính của lớp Link (LinkID, LinkName, LinkURL,...)
             var properties = typeof(Link).GetProperties();
-            string s = String.Empty;
+
+            // 2.0. Tạo 1 danh List với mỗi phần tử là kiểu Tuple
+            // Tuple<string, bool, int> với tham số lần lượt là <Name, IsVirtual, Order>
+            // tức là Tên thuộc tính, Thuộc tính là virtual hay không và Thứ tự thuộc tính
+            List<Tuple<string, bool, int>> list = new List<Tuple<string, bool, int>>();
             foreach (var item in properties)
             {
-                // 2.1 kiem tra xem thuoc tinh nay la virtual (public virtual Category Category...)
+                int order = 999;
                 var isVirtual = item.GetAccessors()[0].IsVirtual;
 
-                // 2.2. thuoc tih binh thuong thi cho phep sep xep
-                if (!isVirtual)
+                if (item.Name == "LinkName") order = 1;
+                if (item.Name == "LinkID") order = 2;
+                if (item.Name == "LinkDescription") order = 3;
+                if (item.Name == "LinkURL") order = 4;
+                if (item.Name == "CategoryID") continue; // Không hiển thị cột này
+                Tuple<string, bool, int> t = new Tuple<string, bool, int>(item.Name, isVirtual, order);
+                list.Add(t);
+            }
+
+            // 2.1. Sắp xếp theo thứ tự ở trên
+            list = list.OrderBy(x => x.Item3).ToList();
+
+            foreach (var item in list)
+            {
+                // 2.2. Thuộc tính bình thường thì cho phép sắp xếp
+                if (!item.Item2) // Item2 dùng để kiểm tra thuộc tính ảo hay không?
                 {
-                    ViewBag.Headings += "<th><a href='?sortProperty=" + item.Name + "&sortOrder=" +
-                        ViewBag.SortOrder + "'>" + item.Name + "</a></th>";
+                    // 2.3. So thuộc tính sortProperty và sortOrder để biết thuộc tính nào cần thay biểu tượng sắp giảm
+                    if (sortOrder == "desc" && sortProperty == item.Item1)
+                    {
+                        ViewBag.Headings += "<th><a href='?sortProperty=" + item.Item1 + "&sortOrder=" +
+                            ViewBag.SortOrder + "'>" + item.Item1 + "<i class='fa fa-fw fa-sort-desc'></i></th></a></th>";
+                    }
+                    else if (sortOrder == "asc" && sortProperty == item.Item1)
+                    {
+                        ViewBag.Headings += "<th><a href='?sortProperty=" + item.Item1 + "&sortOrder=" +
+                            ViewBag.SortOrder + "'>" + item.Item1 + "<i class='fa fa-fw fa-sort-asc'></a></th>";
+                    }
+                    else
+                    {
+                        ViewBag.Headings += "<th><a href='?sortProperty=" + item.Item1 + "&sortOrder=" +
+                           ViewBag.SortOrder + "'>" + item.Item1 + "<i class='fa fa-fw fa-sort'></a></th>";
+                    }
+
                 }
-                // 2.3. thuoc tinh virtual (public virtual Category Category...) thi khong duoc sxep
-                // => can tao lien ket
-                else ViewBag.Headings += "<th>" + item.Name + "</th>";
+                // 2.4. Thuộc tính virtual (public virtual Category Category...) thì không sắp xếp được
+                // cho nên không cần tạo liên kết
+                else ViewBag.Headings += "<th>" + item.Item1 + "</th>";
             }
 
             // 3. truy van lay tat ca duong dan
