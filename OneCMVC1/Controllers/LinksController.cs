@@ -7,6 +7,9 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using OneCMVC1.Models;
+using System.Linq.Dynamic;
+using System.Linq.Expressions;
+
 
 namespace OneCMVC1.Controllers
 {
@@ -15,47 +18,42 @@ namespace OneCMVC1.Controllers
         private OneCEntities db = new OneCEntities();
 
         // GET: Links
-        public ActionResult Index(string sortOrder)
+        public ActionResult Index(string sortProperty, string sortOrder)
         {
-            //1. Them bien NameSortParm de biet trang thai sap xep tang giam o View
-            if (String.IsNullOrEmpty(sortOrder))
+            // 1. Tao bien ViewBag SortOrder de giu trang thai sap tang hay giam
+            ViewBag.SortOrder = String.IsNullOrEmpty(sortOrder) ? "desc" : "";
+
+            // 2. lay tat ca ten thuoc tinh cua lop Link (LinkID, LinkName, LinkURL,...)
+            var properties = typeof(Link).GetProperties();
+            string s = String.Empty;
+            foreach (var item in properties)
             {
-                ViewBag.NameSortParm = "name_desc";
+                // 2.1 kiem tra xem thuoc tinh nay la virtual (public virtual Category Category...)
+                var isVirtual = item.GetAccessors()[0].IsVirtual;
+
+                // 2.2. thuoc tih binh thuong thi cho phep sep xep
+                if (!isVirtual)
+                {
+                    ViewBag.Headings += "<th><a href='?sortProperty=" + item.Name + "&sortOrder=" +
+                        ViewBag.SortOrder + "'>" + item.Name + "</a></th>";
+                }
+                // 2.3. thuoc tinh virtual (public virtual Category Category...) thi khong duoc sxep
+                // => can tao lien ket
+                else ViewBag.Headings += "<th>" + item.Name + "</th>";
             }
-            else
-            {
-                ViewBag.NameSortPart = "";
-            }
-            // ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
 
-            ViewBag.DescriptionSortParm = sortOrder == "Description" ? "description_desc" : "{description";
-
-
-            //2. truy van lay tat ca duong dan
+            // 3. truy van lay tat ca duong dan
             var links = from l in db.Links
                         select l;
-            //3. sap xep theo thuoc tinh LinkName
-            switch (sortOrder)
-            {
-                //3.1 neu bien sortName giam thi sap xep theo LinkName
-                case "name_desc":
-                    links = links.OrderByDescending(s => s.LinkName);
-                break;
-                //3.2 sap xep tang dan theo linkDescription
-                case "Description":
-                    links = links.OrderBy(s => s.LinkDescription);
-                    break;
-                //3.3 sap xep giam dan theo linkDescription
-                case "description_desc":
-                    links = links.OrderByDescending(s => s.LinkDescription);
-                    break;
 
-                //3.4 mac dinh sap xep tan
-                default:
-                    links = links.OrderBy(s => s.LinkName);
-                    break;
-            }
-            //4.tra ket qua ra view
+            // 4. tao thuoc tinh sap xep mac dinh la "LinkID"
+            if (String.IsNullOrEmpty(sortProperty)) sortProperty = "LinkID";
+
+            // 5. sap xep tang giamr bang phuong thuc OrderBy su dung trong thu vien Dynamic LINQ
+            if (sortOrder == "desc") links = links.OrderBy(sortProperty + " desc");
+            else links = links.OrderBy(sortProperty);
+
+            // 6. tra ket qua ra view
             return View(links.ToList());
         }
 

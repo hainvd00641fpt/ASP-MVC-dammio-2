@@ -80,3 +80,4 @@ c:\users\hai hai\documents\visual studio 2015\Projects\OneCMVC1\OneCMVC1\bin\Mic
 c:\users\hai hai\documents\visual studio 2015\Projects\OneCMVC1\OneCMVC1\obj\Debug\OneCMVC1.csprojResolveAssemblyReference.cache
 c:\users\hai hai\documents\visual studio 2015\Projects\OneCMVC1\OneCMVC1\obj\Debug\OneCMVC1.dll
 c:\users\hai hai\documents\visual studio 2015\Projects\OneCMVC1\OneCMVC1\obj\Debug\OneCMVC1.pdb
+c:\users\hai hai\documents\visual studio 2015\Projects\OneCMVC1\OneCMVC1\bin\System.Linq.Dynamic.dll
